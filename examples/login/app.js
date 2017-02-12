@@ -6,6 +6,7 @@ const express = require('express')
     , methodOverride = require('method-override')
     , session = require('express-session')
     , partials = require('express-partials')
+    , ig = require('instagram-node').instagram()
     , InstagramStrategy = require('passport-instagram').Strategy;
 
 const credentials = require('./credentials.json');
@@ -46,7 +47,7 @@ passport.use(new InstagramStrategy({
     function(accessToken, refreshToken, profile, done) {
         // asynchronous verification, for effect...
         process.nextTick(function () {
-
+            ig.use({ access_token: accessToken });
             // To keep the example simple, the user's Instagram profile is returned to
             // represent the logged-in user.  In a typical application, you would want
             // to associate the Instagram account with a user record in your database,
@@ -55,9 +56,6 @@ passport.use(new InstagramStrategy({
         });
     }
 ));
-
-
-
 
 const app = express();
 
@@ -75,6 +73,7 @@ app.use(session({
     resave: true,
     secret: 'secret'
 }));
+app.use(express.static('public'))
 // Initialize Passport!  Also use passport.session() middleware, to support
 // persistent login sessions (recommended).
 app.use(passport.initialize());
@@ -91,6 +90,12 @@ app.get('/account', ensureAuthenticated, function(req, res){
 
 app.get('/login', function(req, res){
     res.render('login', { user: req.user });
+});
+
+app.get('/media', ensureAuthenticated, function(req, res){
+    ig.user_self_media_recent(req.user.id, function(err, media, pagination, remaining, limit) {
+        res.render('media', { user: req.user, media: media });
+    });
 });
 
 // GET /auth/instagram

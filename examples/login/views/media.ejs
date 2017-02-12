@@ -1,0 +1,14 @@
+<div class="page-header">
+    <h1>Recent Thumbnails</h1>
+</div>
+<div class="row">
+    <% media.forEach(function(item) { %>
+    <div class="col-xs-6 col-sm-3 col-md-2">
+        <p class="text-center">
+            <a href="media/<%= item.id %>"><img src="<%= item.images.thumbnail.url %>" class="img-thumbnail center-block" alt="item.caption.text"></a>
+            Likes <span class="badge"><%= item.likes.count %></span><br>
+            Comments <span class="badge"><%= item.comments.count %></span>
+        </p>
+    </div>
+    <% }); %>
+</div>
