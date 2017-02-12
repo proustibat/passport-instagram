@@ -1,5 +1,4 @@
-
-var express = require('express')
+const express = require('express')
     , passport = require('passport')
     , morgan = require('morgan')
     , cookieParser = require('cookie-parser')
@@ -9,15 +8,15 @@ var express = require('express')
     , partials = require('express-partials')
     , InstagramStrategy = require('passport-instagram').Strategy;
 
-var credentials = require('./credentials.json');
-console.log(credentials.INSTAGRAM_CLIENT_ID);
+const credentials = require('./credentials.json');
 
-
-// var INSTAGRAM_CLIENT_ID = "--insert-instagram-client-id-here--";
-// var INSTAGRAM_CLIENT_SECRET = "--insert-instagram-client-secret-here--";
-var INSTAGRAM_CLIENT_ID = credentials.INSTAGRAM_CLIENT_ID,
-    INSTAGRAM_CLIENT_SECRET = credentials.INSTAGRAM_CLIENT_SECRET;
-
+const config = {
+      INSTAGRAM_CLIENT_ID: credentials.INSTAGRAM_CLIENT_ID
+    , INSTAGRAM_CLIENT_SECRET: credentials.INSTAGRAM_CLIENT_SECRET
+    , host: "localhost"
+    , port: 3000
+    , callbackUri: "callback"
+};
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -40,9 +39,9 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an accessToken, refreshToken, and Instagram
 //   profile), and invoke a callback with a user object.
 passport.use(new InstagramStrategy({
-        clientID: INSTAGRAM_CLIENT_ID,
-        clientSecret: INSTAGRAM_CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/callback"
+        clientID: config.INSTAGRAM_CLIENT_ID,
+        clientSecret: config.INSTAGRAM_CLIENT_SECRET,
+        callbackURL: "http://" + config.host + ":" + config.port + "/" + config.callbackUri
     },
     function(accessToken, refreshToken, profile, done) {
         // asynchronous verification, for effect...
@@ -60,7 +59,7 @@ passport.use(new InstagramStrategy({
 
 
 
-var app = express();
+const app = express();
 
 // configure Express
 app.set('views', __dirname + '/views');
@@ -81,25 +80,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(__dirname + '/public'));
-
-// configure Express
-// app.configure(function() {
-//   app.use(partials());
-//   app.set('views', __dirname + '/views');
-//   app.set('view engine', 'ejs');
-//   app.use(express.logger());
-//   app.use(express.cookieParser());
-//   app.use(express.bodyParser());
-//   // app.use(express.methodOverride());
-//   app.use(express.session({ secret: 'keyboard cat' }));
-//   // Initialize Passport!  Also use passport.session() middleware, to support
-//   // persistent login sessions (recommended).
-//   app.use(passport.initialize());
-//   app.use(passport.session());
-//   app.use(app.router);
-//   app.use(express.static(__dirname + '/public'));
-// });
-
 
 app.get('/', function(req, res){
     res.render('index', { user: req.user });
@@ -141,12 +121,11 @@ app.get('/logout', function(req, res){
     res.redirect('/');
 });
 
-var port = 3000;
-app.listen(port, function(error) {
+app.listen(config.port, function(error) {
     if (error) {
         console.error(error)
     } else {
-        console.info("==> 🌎  Listening on port %s. Open up http://localhost:%s/ in your browser.", port, port)
+        console.info("==> 🌎  Listening on port %s. Open up http://" + config.host + ":%s/ in your browser.", config.port, config.port)
     }
 });
 
